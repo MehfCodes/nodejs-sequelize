@@ -1,8 +1,8 @@
-import { Model, DataTypes } from 'sequelize';
-import db from '../configs/dbConnection';
+import sequelize from 'sequelize';
+import db from '../configs/dbConnection.js';
 
+const { Model, DataTypes } = sequelize;
 export default class User extends Model {}
-
 User.init(
   {
     id: {
@@ -14,6 +14,7 @@ User.init(
     username: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     email: {
       type: DataTypes.STRING,
@@ -24,8 +25,7 @@ User.init(
       allowNull: false,
     },
   },
-  { tableName: 'Users' }
+  { sequelize: db, tableName: 'Users' }
 );
-// (async () => {
-await User.sinc();
-// })();
+
+await User.sync();
