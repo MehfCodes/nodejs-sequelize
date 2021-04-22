@@ -1,63 +1,51 @@
 import User from '../models/user.model.js';
+import { catchAsync } from '../utils/catchasync.js';
 
-export async function signUp(req, res) {
-  try {
-    const user = await User.create(req.body);
-    if (!user.toJSON()) {
-      throw Error('signup failed.');
-    }
-    res.json({ data: user.toJSON() });
-  } catch (error) {
-    res.json({ message: error.message });
+export const signUp = catchAsync(async (req, res, next) => {
+  const user = await User.create(req.body);
+  if (!user.toJSON()) {
+    return next(new Error('signup failed.'));
   }
-}
+  res.json({ data: user.toJSON() });
+});
 
-export async function getAllUser(req, res) {
-  try {
-    const users = await User.findAll({
-      attributes: ['id', 'username', 'email'],
-      raw: true,
-    });
-    // console.log('users', users);
+export const getAllUser = catchAsync(async (req, res, next) => {
+  const users = await User.findAll({
+    attributes: ['id', 'username', 'email'],
+    raw: true,
+  });
+  // console.log('users', users);
 
-    if (users.length === 0) {
-      throw Error('not found.');
-    }
-    res.json({ data: users });
-  } catch (error) {
-    res.json({ message: error.message });
+  if (users.length === 0) {
+    return next(new Error('not found.'));
   }
-}
+  res.json({ data: users });
+});
 
-export async function updateUser(req, res) {
-  try {
-    const users = await User.update(req.body, {
-      where: { id: req.params.id },
-      returning: true,
-    });
-    // console.log('users', users);
-
-    if (users[1] === 0) {
-      throw Error('not found.');
-    }
-    res.json({ data: 'user updated.' });
-  } catch (error) {
-    res.json({ message: error.message });
+export const updateUser = catchAsync(async (req, res, next) => {
+  if (req.body.password) {
+    return next(new Error('you can not update password directly.'));
   }
-}
+  const users = await User.update(req.body, {
+    where: { id: req.params.id },
+    returning: true,
+    individualHooks: true,
+  });
 
-export async function deleteUser(req, res) {
-  try {
-    const users = await User.destroy({
-      where: { id: req.params.id },
-    });
-    console.log('users', users);
-
-    if (users[1] === 0) {
-      throw Error('not found.');
-    }
-    res.json({ data: 'user deleted.' });
-  } catch (error) {
-    res.json({ message: error.message });
+  if (users[1] === 0) {
+    return next(new Error('not found.'));
   }
-}
+  res.json({ data: 'user updated.' });
+});
+
+export const deleteUser = catchAsync(async (req, res, next) => {
+  const users = await User.destroy({
+    where: { id: req.params.id },
+  });
+  //   console.log('users', users);
+
+  if (users[1] === 0) {
+    return next(new Error('not found.'));
+  }
+  res.json({ data: 'user deleted.' });
+});
