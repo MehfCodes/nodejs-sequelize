@@ -4,4 +4,5 @@ const db = new Sequelize('coffee_store', 'mehf', 'password', {
   dialect: 'mysql',
   port: 3306,
 });
+
 export default db;
