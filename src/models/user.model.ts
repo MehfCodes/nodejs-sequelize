@@ -1,18 +1,30 @@
 import bcrypt from 'bcryptjs';
-import sequelize, { Optional } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import db from '../configs/dbConnection';
-import { UserAttributes, UserCreationAttributes } from './user.d';
-const { Model, DataTypes } = sequelize;
-const { hash, genSalt, compare } = bcrypt;
 
-export default class User
+const { hash, genSalt } = bcrypt;
+
+export interface UserAttributes {
+  id: number;
+  username: string;
+  email: string;
+  password: string | undefined;
+}
+
+export interface UserI extends UserAttributes {
+  token: string;
+}
+
+interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+
+class User
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
-  id!: number;
-  username!: string;
-  email!: string;
-  password: string | undefined;
+  public id!: number;
+  public username!: string;
+  public email!: string;
+  public password: string | undefined;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -69,10 +81,11 @@ User.init(
 
 (async () => await User.sync())();
 
-User.beforeSave(async (user, options) => {
+User.beforeSave(async (user) => {
   if (user.changed('password')) {
     const salt = await genSalt(10);
     const hashedPassword = await hash(user.password!, salt);
     user.password = hashedPassword;
   }
 });
+export default User;

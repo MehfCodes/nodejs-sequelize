@@ -1,61 +1,61 @@
-import { Request, NextFunction } from 'express';
-import { verify, sign, VerifyErrors, JsonWebTokenError } from 'jsonwebtoken';
-import { UserAttributes } from '../models/user';
+import { verify, sign, VerifyErrors } from 'jsonwebtoken';
 import User from '../models/user.model';
+
+import { Request, Response, NextFunction } from 'express';
 
 interface Payload {
   id: number;
   iat: number;
 }
+interface RequestWithUser extends Request {
+  user?: User | null;
+}
+const secret = String(process.env.TOKEN_KEY);
 
-export default class Auth {
-  private secret = String(process.env.TOKEN_KEY);
-  // private currentUser:UserAttributes|null;
-  // private id:number;
+export function createToken(id: number) {
+  return sign({ id }, secret, { expiresIn: '3d' });
+}
 
-  // constructor(public req: Request, public next: NextFunction) {}
+async function verifyToken(token: string) {
+  return new Promise((resolve, reject) => {
+    verify(token, secret, (error: VerifyErrors | null, decoded?: object) => {
+      if (error) return reject(error);
+      return resolve(decoded);
+    });
+  });
+}
 
-  // private getToken(): string | undefined {
-  //   if (
-  //     this.req.headers.authorization &&
-  //     this.req.headers.authorization.startsWith('Bearer')
-  //   ) {
-  //     return this.req.headers.authorization.split(' ')[1];
-  //   } else if (this.req.cookies && this.req.cookies.jwt) {
-  //     return this.req.cookies.jwt;
-  //   } else {
-  //     return undefined;
-  //   }
-  // }
+export async function isAuthenticated(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<Error | void> {
+  try {
+    let token: string | undefined;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+    if (!token) {
+      throw new Error('please login to your account.');
+    }
+    const decoded = (await verifyToken(token)) as Payload;
+    const currentUser = await User.findOne({
+      where: { id: decoded.id },
+      raw: true,
+    });
+    if (!currentUser) {
+      throw new Error('user not found');
+    }
 
-  //   private async isUserExists(){
-  //     let token=this.getToken()
-  //     if(!token){
-  //       return this.next(
-  //         new Error('You are not logged in! Please log in to get access.')
-  //       );
-  //     }
-  //     const decoded=await this.verifyToken(token)
-
-  // this.currentUser=await User.findOne({where:{id:decoded.id}})
-  //   }
-
-  public createToken(id: number) {
-    return sign({ id }, this.secret, { expiresIn: '3d' });
+    // check for change password
+    (req as RequestWithUser).user = currentUser;
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  // public verifyToken(
-  //   token: string
-  // ): Promise<Payload | VerifyErrors> {
-  //   return new Promise((resolve, reject) => {
-  //     verify(
-  //       token,
-  //       this.secret,
-  //       (error: VerifyErrors | null, decoded: object | undefined) => {
-  //         if (error) return reject(error);
-  //         return resolve(decoded);
-  //       }
-  //     );
-  //   });
-  // }
 }

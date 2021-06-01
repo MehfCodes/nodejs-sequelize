@@ -41,7 +41,7 @@ class App {
   }
   private catchErrors(): void {
     this.app.use(
-      (error: Error, req: Request, res: Response, next: NextFunction) => {
+      (error: Error, _req: Request, res: Response, _next: NextFunction) => {
         res.json({ message: error.message, error });
       }
     );
@@ -62,4 +62,4 @@ class App {
   }
 }
 
-const app = new App();
+new App();

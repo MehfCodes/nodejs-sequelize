@@ -4,7 +4,6 @@ import {
   FindOptions,
   Model,
   ModelCtor,
-  NonNullFindOptions,
   UpdateOptions,
 } from 'sequelize';
 import db from '../configs/dbConnection';
@@ -17,7 +16,7 @@ export default class CRUD {
   protected res!: Response;
   protected next!: NextFunction;
   constructor(private modelName: string) {
-    this.model = db.models[modelName];
+    this.model = db.models[this.modelName];
     this.createOne = this.createOne.bind(this);
     this.getOne = this.getOne.bind(this);
     this.getMany = this.getMany.bind(this);

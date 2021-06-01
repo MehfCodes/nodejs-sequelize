@@ -1,0 +1,9 @@
+{
+    "editor.fontFamily": "'comic shanns',Consolas,'Courier New', monospace",
+    "window.zoomLevel": 0,
+    "editor.fontSize": 18,
+    "terminal.integrated.fontFamily": "Lucida Consolas,cascadia code",
+    "terminal.integrated.fontSize": 13,
+    "terminal.integrated.fontWeight": "400",
+    "terminal.integrated.lineHeight": 1.5
+}
