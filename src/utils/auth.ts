@@ -7,7 +7,7 @@ interface Payload {
   id: number;
   iat: number;
 }
-interface RequestWithUser extends Request {
+export interface RequestWithUser extends Request {
   user?: User | null;
 }
 const secret = String(process.env.TOKEN_KEY);
@@ -41,7 +41,7 @@ export async function isAuthenticated(
       token = req.cookies.jwt;
     }
     if (!token) {
-      throw new Error('please login to your account.');
+      return next(new Error('please login to your account.'));
     }
     const decoded = (await verifyToken(token)) as Payload;
     const currentUser = await User.findOne({
@@ -49,13 +49,13 @@ export async function isAuthenticated(
       raw: true,
     });
     if (!currentUser) {
-      throw new Error('user not found');
+      return next(new Error('user not found'));
     }
 
     // check for change password
     (req as RequestWithUser).user = currentUser;
     next();
   } catch (error) {
-    next(error);
+    return next(error);
   }
 }

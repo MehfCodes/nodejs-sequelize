@@ -79,8 +79,6 @@ User.init(
   }
 );
 
-(async () => await User.sync())();
-
 User.beforeSave(async (user) => {
   if (user.changed('password')) {
     const salt = await genSalt(10);

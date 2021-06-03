@@ -7,6 +7,7 @@ import {
   UpdateOptions,
 } from 'sequelize';
 import db from '../configs/dbConnection';
+import Like from '../models/like.model';
 import User from '../models/user.model';
 
 export default class CRUD {
@@ -22,6 +23,7 @@ export default class CRUD {
     this.getMany = this.getMany.bind(this);
     this.update = this.update.bind(this);
     this.deleteOne = this.deleteOne.bind(this);
+    console.log(this.modelName, this.model);
   }
 
   protected assignRoutes(req: Request, res: Response, next: NextFunction) {
@@ -48,13 +50,15 @@ export default class CRUD {
     }
   }
 
-  protected async getOne(options?: FindOptions<any>): Promise<void | object> {
+  protected async getOne(
+    options: FindOptions<any> = { where: { id: this.req.params.id }, raw: true }
+  ): Promise<void | object> {
     try {
       const doc = await this.model.findOne(options);
       if (!doc) {
         return this.next(new Error('not found'));
       }
-      if (this.model === User) {
+      if (this.model === User || this.model === Like) {
         return doc;
       }
       await this.sendRes(doc, 200);
@@ -68,7 +72,6 @@ export default class CRUD {
       if (docs.length === 0) {
         return this.next(new Error('not found'));
       }
-
       this.sendRes(docs, 200);
     } catch (error) {
       return this.next(error);
@@ -81,13 +84,14 @@ export default class CRUD {
         return this.next(new Error('update failed!'));
       }
 
-      this.sendRes(docs, 200);
+      this.sendRes(docs[0], 200);
     } catch (error) {
       this.next(error);
     }
   }
   protected async deleteOne(options: DestroyOptions): Promise<void> {
     const doc = await this.model.destroy(options);
+
     if (doc == 0) {
       return this.next(new Error('delete failed!'));
     }

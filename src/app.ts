@@ -4,7 +4,9 @@ import { config } from 'dotenv';
 import db from './configs/dbConnection';
 // import userRouters from './routers/user.routers';
 import cookieParser from 'cookie-parser';
-import UserController from './controllers/user.controllers';
+import PostControllers from './controllers/post.controllers';
+import LikeControllers from './controllers/like.controllers';
+import UserControllers from './controllers/user.controllers';
 // import User from './models/user.model';
 config({ path: './config.env' });
 
@@ -23,6 +25,7 @@ class App {
 
   private async connectDB(): Promise<void> {
     try {
+      await db.sync();
       await db.authenticate();
       await db.query('create database if not exists coffee_store');
       console.log('database connected...');
@@ -37,7 +40,9 @@ class App {
   }
 
   private routers(): void {
-    this.app.use('/api/users', new UserController().router);
+    this.app.use('/api/users', new UserControllers().router);
+    this.app.use('/api/posts', new PostControllers().router);
+    this.app.use('/api/likes', new LikeControllers().router);
   }
   private catchErrors(): void {
     this.app.use(

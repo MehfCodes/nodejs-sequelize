@@ -5,7 +5,7 @@ import { compare } from 'bcryptjs';
 import User from '../models/user.model';
 import { createToken, isAuthenticated } from '../utils/auth';
 
-export default class UserController extends CRUD {
+export default class UserControllers extends CRUD {
   public router = Router();
 
   constructor() {
