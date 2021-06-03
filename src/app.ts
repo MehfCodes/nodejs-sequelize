@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import PostControllers from './controllers/post.controllers';
 import LikeControllers from './controllers/like.controllers';
 import UserControllers from './controllers/user.controllers';
+import CommentControllers from './controllers/comment.controllers';
 // import User from './models/user.model';
 config({ path: './config.env' });
 
@@ -43,6 +44,7 @@ class App {
     this.app.use('/api/users', new UserControllers().router);
     this.app.use('/api/posts', new PostControllers().router);
     this.app.use('/api/likes', new LikeControllers().router);
+    this.app.use('/api/comments', new CommentControllers().router);
   }
   private catchErrors(): void {
     this.app.use(
